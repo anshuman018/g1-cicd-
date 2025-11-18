@@ -3,14 +3,541 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Epic Tic-Tac-Toe Battle 🎮</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            animation: bounce 1s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+
+        .subtitle {
+            color: #764ba2;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+            font-style: italic;
+        }
+
+        .status {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 40px;
+            color: #333;
+            animation: pulse 2s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 30px auto;
+            max-width: 400px;
+            perspective: 1000px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: linear-gradient(145deg, #f0f0f0, #ffffff);
+            border: none;
+            border-radius: 15px;
+            font-size: 3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cell:hover:not(.taken) {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(145deg, #667eea, #764ba2);
+        }
+
+        .cell.taken {
+            cursor: not-allowed;
+        }
+
+        .cell.x {
+            color: #ff6b6b;
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .cell.o {
+            color: #4ecdc4;
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0) rotate(0deg);
+            }
+            50% {
+                transform: scale(1.2) rotate(180deg);
+            }
+            100% {
+                transform: scale(1) rotate(360deg);
+            }
+        }
+
+        .cell.winner {
+            animation: winnerGlow 1s ease infinite;
+            background: linear-gradient(145deg, #ffd93d, #ffb800);
+        }
+
+        @keyframes winnerGlow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 217, 61, 0.8);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 217, 61, 1);
+            }
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .mode-btn {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border-radius: 15px;
+        }
+
+        .score {
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .funny-messages {
+            margin-top: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border-radius: 15px;
+            min-height: 50px;
+            font-weight: bold;
+            color: #2d3436;
+            font-style: italic;
+            animation: slideMessage 0.5s ease-out;
+        }
+
+        @keyframes slideMessage {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            position: absolute;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .emoji-rain {
+            position: fixed;
+            font-size: 2em;
+            pointer-events: none;
+            animation: fall 3s linear;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>G1 CICD Pipeline</h1>
-    <p>This is a sample HTML file for the G1 CICD Pipeline project.</p>
-    <p>Version: 1.0.0</p>
-    
+    <div class="container">
+        <h1>🎮 Epic Tic-Tac-Toe Battle 🎮</h1>
+        <p class="subtitle">"Where Legends Are Made (or Broken)"</p>
+        
+        <div class="score-board">
+            <div class="score">
+                <div class="score-label">Player X 😎</div>
+                <div class="score-value" id="scoreX">0</div>
+            </div>
+            <div class="score">
+                <div class="score-label">Draws 🤝</div>
+                <div class="score-value" id="scoreDraw">0</div>
+            </div>
+            <div class="score">
+                <div class="score-label">Player O 🤖</div>
+                <div class="score-value" id="scoreO">0</div>
+            </div>
+        </div>
 
-    
+        <div class="status" id="status">Your turn, hotshot! 😎</div>
+
+        <div class="game-board" id="board">
+            <button class="cell" data-index="0"></button>
+            <button class="cell" data-index="1"></button>
+            <button class="cell" data-index="2"></button>
+            <button class="cell" data-index="3"></button>
+            <button class="cell" data-index="4"></button>
+            <button class="cell" data-index="5"></button>
+            <button class="cell" data-index="6"></button>
+            <button class="cell" data-index="7"></button>
+            <button class="cell" data-index="8"></button>
+        </div>
+
+        <div class="funny-messages" id="funnyMessage">
+            "Click a square before I fall asleep... 😴"
+        </div>
+
+        <div class="controls">
+            <button class="reset-btn" onclick="resetGame()">🔄 Reset Game</button>
+            <button class="mode-btn" onclick="toggleMode()">🤖 AI Mode: ON</button>
+        </div>
+    </div>
+
+    <script>
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let aiMode = true;
+        let scores = { X: 0, O: 0, draw: 0 };
+
+        const funnyMessages = {
+            playerTurn: [
+                "Your move, genius! 🧠",
+                "Don't overthink it... 🤔",
+                "Choose wisely, young padawan! 🗡️",
+                "Time to shine! ✨",
+                "Make me proud! 💪"
+            ],
+            aiTurn: [
+                "AI is thinking... (or pretending to) 🤖",
+                "Beep boop... calculating... 🤓",
+                "AI's turn (prepare to lose) 😈",
+                "The robot overlord moves... 🦾"
+            ],
+            playerWin: [
+                "🎉 YOU WON! You're basically a genius! 🧠",
+                "🏆 VICTORY! The AI needs therapy now! 😢",
+                "⭐ CHAMPION! You've peaked in life! 🎯",
+                "🎊 YOU DID IT! Time to celebrate! 🍾"
+            ],
+            aiWin: [
+                "😅 AI WINS! Don't feel bad, it cheated! 🤖",
+                "🤦 AI VICTORY! Robots: 1, Humans: 0 💀",
+                "😭 YOU LOST! But hey, nice try! 👍",
+                "🎯 AI WINS! It was programmed to crush dreams! 💔"
+            ],
+            draw: [
+                "😐 IT'S A DRAW! Everyone's a winner! (no one is) 🤷",
+                "🤝 TIE GAME! You're equals in mediocrity! 😂",
+                "😑 DRAW! Both too good or both too bad? 🤔",
+                "🎭 STALEMATE! Shakespeare would be proud! 📚"
+            ]
+        };
+
+        const winningCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+            [0, 4, 8], [2, 4, 6] // diagonals
+        ];
+
+        function handleCellClick(e) {
+            const cell = e.target;
+            const index = cell.dataset.index;
+
+            if (board[index] !== '' || !gameActive || (aiMode && currentPlayer === 'O')) {
+                return;
+            }
+
+            makeMove(index, cell);
+
+            if (gameActive && aiMode && currentPlayer === 'O') {
+                setTimeout(aiMove, 500);
+            }
+        }
+
+        function makeMove(index, cell) {
+            board[index] = currentPlayer;
+            cell.textContent = currentPlayer;
+            cell.classList.add('taken', currentPlayer.toLowerCase());
+
+            if (checkWinner()) {
+                handleWin();
+            } else if (board.every(cell => cell !== '')) {
+                handleDraw();
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                updateStatus();
+            }
+        }
+
+        function aiMove() {
+            if (!gameActive) return;
+
+            updateMessage(funnyMessages.aiTurn);
+
+            // Smart AI that actually tries to win
+            let move = findBestMove();
+            
+            const cell = document.querySelector(`[data-index="${move}"]`);
+            makeMove(move, cell);
+        }
+
+        function findBestMove() {
+            // Check if AI can win
+            for (let combo of winningCombinations) {
+                let [a, b, c] = combo;
+                if (board[a] === 'O' && board[b] === 'O' && board[c] === '') return c;
+                if (board[a] === 'O' && board[c] === 'O' && board[b] === '') return b;
+                if (board[b] === 'O' && board[c] === 'O' && board[a] === '') return a;
+            }
+
+            // Block player from winning
+            for (let combo of winningCombinations) {
+                let [a, b, c] = combo;
+                if (board[a] === 'X' && board[b] === 'X' && board[c] === '') return c;
+                if (board[a] === 'X' && board[c] === 'X' && board[b] === '') return b;
+                if (board[b] === 'X' && board[c] === 'X' && board[a] === '') return a;
+            }
+
+            // Take center if available
+            if (board[4] === '') return 4;
+
+            // Take a corner
+            const corners = [0, 2, 6, 8];
+            const availableCorners = corners.filter(i => board[i] === '');
+            if (availableCorners.length > 0) {
+                return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+            }
+
+            // Take any available space
+            const available = board.map((cell, i) => cell === '' ? i : null).filter(i => i !== null);
+            return available[Math.floor(Math.random() * available.length)];
+        }
+
+        function checkWinner() {
+            return winningCombinations.some(combo => {
+                const [a, b, c] = combo;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    highlightWinningCells(combo);
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        function highlightWinningCells(combo) {
+            combo.forEach(index => {
+                document.querySelector(`[data-index="${index}"]`).classList.add('winner');
+            });
+        }
+
+        function handleWin() {
+            gameActive = false;
+            scores[currentPlayer]++;
+            updateScores();
+            createConfetti();
+            
+            const messages = currentPlayer === 'X' ? funnyMessages.playerWin : funnyMessages.aiWin;
+            updateMessage(messages);
+            
+            document.getElementById('status').textContent = 
+                currentPlayer === 'X' ? '🎉 YOU WON! 🎉' : '🤖 AI WINS! 🤖';
+        }
+
+        function handleDraw() {
+            gameActive = false;
+            scores.draw++;
+            updateScores();
+            updateMessage(funnyMessages.draw);
+            document.getElementById('status').textContent = "😐 IT'S A DRAW! 😐";
+        }
+
+        function updateStatus() {
+            if (currentPlayer === 'X') {
+                updateMessage(funnyMessages.playerTurn);
+                document.getElementById('status').textContent = "Your turn, hotshot! 😎";
+            } else if (aiMode) {
+                updateMessage(funnyMessages.aiTurn);
+                document.getElementById('status').textContent = "AI's thinking... 🤖";
+            } else {
+                document.getElementById('status').textContent = "Player O's turn! 🎯";
+            }
+        }
+
+        function updateMessage(messages) {
+            const message = messages[Math.floor(Math.random() * messages.length)];
+            const messageEl = document.getElementById('funnyMessage');
+            messageEl.textContent = message;
+            messageEl.style.animation = 'none';
+            setTimeout(() => messageEl.style.animation = 'slideMessage 0.5s ease-out', 10);
+        }
+
+        function updateScores() {
+            document.getElementById('scoreX').textContent = scores.X;
+            document.getElementById('scoreO').textContent = scores.O;
+            document.getElementById('scoreDraw').textContent = scores.draw;
+        }
+
+        function resetGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('taken', 'x', 'o', 'winner');
+            });
+
+            updateStatus();
+            updateMessage(funnyMessages.playerTurn);
+        }
+
+        function toggleMode() {
+            aiMode = !aiMode;
+            const btn = event.target;
+            btn.textContent = aiMode ? '🤖 AI Mode: ON' : '👥 2 Player Mode';
+            resetGame();
+        }
+
+        function createConfetti() {
+            const emojis = ['🎉', '🎊', '⭐', '✨', '🏆', '🎯'];
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const emoji = document.createElement('div');
+                    emoji.className = 'emoji-rain';
+                    emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    emoji.style.left = Math.random() * 100 + '%';
+                    emoji.style.top = '-50px';
+                    document.body.appendChild(emoji);
+                    
+                    setTimeout(() => emoji.remove(), 3000);
+                }, i * 100);
+            }
+        }
+
+        // Initialize
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+
+        updateMessage(funnyMessages.playerTurn);
+    </script>
 </body>
 </html>
